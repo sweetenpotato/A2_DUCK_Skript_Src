@@ -1,2 +1,2 @@
-# A2_DUCK_Skript_Src
+# A2_DUCK Skript Src
 For Youtuber A2_DUCK 
