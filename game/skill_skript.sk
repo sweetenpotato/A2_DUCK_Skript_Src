@@ -1,0 +1,190 @@
+on load:
+	if {skill::cool::1} is not set:
+		set {skill::cool::1} to 300
+	if {skill::cool::2} is not set:
+		set {skill::cool::2} to 150
+	if {skill::cool::3} is not set:
+		set {skill::cool::3} to 120
+	if {skill::cool::4} is not set:
+		set {skill::cool::4} to 180
+	if {skill::time::2} is not set:
+		set {skill::time::2} to 3
+	if {skill::time::3} is not set:
+		set {skill::time::3} to 3
+	if {skill::time::4} is not set:
+		set {skill::time::4} to 7
+
+command /스킬 [<text>] [<text>] [<text>] [<text>]:
+	trigger:
+		if player is op:
+			if arg-1 is "활성화":
+				message "&b[&aSkript&b]&r 스킬이 활성화 되었습니다."
+				set {skill::utill::activated} to true
+			else if arg-1 is "비활성화":
+				message "&b[&aSkript&b]&r 스킬이 비활성화 되었습니다."
+				set {skill::utill::activated} to false
+				loop {skill::player::*}:
+					if loop-value is online:
+						set slot 5 of loop-value to air
+						set slot 6 of loop-value to air
+						set slot 7 of loop-value to air
+						set slot 8 of loop-value to air
+				clear {skill::cool::1::*}
+				clear {skill::cool::2::*}
+				clear {skill::cool::3::*}
+				clear {skill::cool::4::*}
+			else if arg-1 is "set":
+				if arg-2 is "add":
+					if arg-3 is "player":
+						if arg-4 is not "@op":
+							set {_player} to arg-4 parsed as player
+							if {_player} is type of player:
+								add {_player} to {skill::player::*}
+								message "&b[&aSkript&b]&r %{_player}%님이 스킬 사용 가능 목록에 추가되었습니다."
+						else if arg-4 is "@op":
+							loop all players:
+								if loop-value is op:
+									add loop-value to {skill::player::*}
+									message "&b[&aSkript&b]&r %loop-value%님이 스킬 사용 가능 목록에 추가되었습니다."
+					else:
+						message "&b[&aSkript&b]&r 현재 지원되지 않는 기능입니다."
+
+				else if arg-2 is "remove":
+					if arg-3 is "player":
+						if arg-4 is not "@op":
+							set {_player} to arg-4 parsed as player
+							if {_player} is type of player:
+								loop {skill::player::*}:
+									if loop-value is {_player}:
+										clear {skill::player::%loop-index%}
+										message "&b[&aSkript&b]&r %{_player}%님이 스킬 사용 가능 목록에서 제거되었습니다."
+						else if arg-4 is "@op":
+							loop {skill::player::*}:
+								if loop-value is op:
+									clear {skill::player::%loop-index%}
+									message "&b[&aSkript&b]&r %loop-value%님이 스킬 사용 가능 목록에서 제거되었습니다."
+					else:
+						message "&b[&aSkript&b]&r 현재 지원하지 않는 기능입니다."
+
+				else if arg-2 is "list":
+					if arg-3 is "player":
+						message "&b[&aSkript&b]&r 스킬 사용 가능 유저 : %{skill::player::*}%"
+
+				else if arg-2 is "cool":
+					set {_cool} to arg-3 parsed as integer
+					if {_cool} is set:
+						set {_id} to arg-4 parsed as integer
+						if {_id} is 1 or 2 or 3 or 4:
+							set {skill::cool::%{_id}%} to {_cool}
+
+				else if arg-2 is "time":
+					set {_time} to arg-3 parsed as integer
+					if {_time} is set:
+						set {_id} to arg-4 parsed as integer
+						if {_id} is 1 or 2 or 3 or 4:
+							set {skill::time::%{_id}%} to {_cool}
+						else:
+							message "&b[&aSkript&b]&r 정확한 스킬 id를 입력해 주세요."
+
+
+on rightclick:
+	if {skill::player::*} contains player:
+		if "%player's current hotbar slot%" is "inventory slot 5 of %player%":
+			if event-item is light green dye:
+				if {skill::cool::1::%player%} is not set:
+					set {skill::cool::1::%player%} to {skill::cool::1}
+					loop all players:
+						if {skill::player::*} do not contain loop-value:
+							add loop-value to {_random::*}
+					set {_random::*} to shuffled {_random::*}
+					teleport {_random::1} to player
+					loop {skill::cool::1} times:
+						wait 1 second
+						subtract 1 from {skill::cool::1::%player%}
+					clear {skill::cool::1::%player%}
+		else if "%player's current hotbar slot%" is "inventory slot 6 of %player%":
+			if event-item is pink dye:
+				if {skill::cool::2::%player%} is not set:
+					set {skill::cool::2::%player%} to {skill::cool::2}
+					if player is op:
+						execute command "effect %player% minecraft:jump_boost %{skill::time::2}% 1 true" by player
+						execute command "effect %player% minecraft:speed %{skill::time::2}% 1 true" by player
+					else:
+						op player
+						execute command "effect %player% minecraft:jump_boost %{skill::time::2}% 1 true" by player
+						execute command "effect %player% minecraft:speed %{skill::time::2}% 1 true" by player
+						deop player
+					loop {skill::cool::2} times:
+						wait 1 second
+						subtract 1 from {skill::cool::2::%player%}
+					clear {skill::cool::2::%player%}
+		else if "%player's current hotbar slot%" is "inventory slot 7 of %player%":
+			if event-item is magenta dye:
+				set {skill::cool::3::%player%} to {skill::cool::3}
+				if player is op:
+					execute command "effect %player% minecraft:resistance %{skill::time::3}% 10 true" by player
+				else:
+					op player
+					execute command "effect %player% minecraft:resistance %{skill::time::3}% 10 true" by player
+					deop player
+				loop {skill::cool::3} times:
+					wait 1 second
+					subtract 1 from {skill::cool::3::%player%}
+				clear {skill::cool::3::%player%}
+		else if "%player's current hotbar slot%" is "inventory slot 8 of %player%":
+			if event-item is purple dye:
+				set {skill::cool::4::%player%} to {skill::cool::4}
+				if player is op:
+					execute command "effect %player% minecraft:speed %{skill::time::4}% 2 true" by player
+				else:
+					op player
+					execute command "effect %player% minecraft:speed %{skill::time::4}% 2 true" by player
+					deop player
+				loop {skill::cool::4} times:
+					wait 1 second
+					subtract 1 from {skill::cool::4::%player%}
+				clear {skill::cool::4::%player%}
+
+every 1 ticks:
+	if {skill::utill::activated} is true:
+		loop {skill::player::*}:
+			if loop-value is online:
+				if {skill::cool::1::%loop-value%} is not set:
+					if slot 5 of loop-value is not light green dye:
+						set {_item} to light green dye named "&r랜덤 소환"
+						set the 1st line of {_item}'s lore to "&r랜덤한 소 플레이어를 눈 앞으로 소환한다."
+						set the 2nd line of {_item}'s lore to "&r쿨타임 : %{skill::cool::1}%초"
+						set slot 5 of loop-value to {_item}
+				else:
+					set {_item} to gray dye named "&r&c쿨타임 : %{skill::cool::1::%loop-value%}%초"
+					set slot 5 of loop-value to {_item}
+
+				if {skill::cool::2::%loop-value%} is not set:
+					if slot 6 of loop-value is not pink dye:
+						set {_item} to pink dye named "&r금강불괴"
+						set the 1st line of {_item}'s lore to "&r아주 짧은 순간 무적이 된다."
+						set the 2nd line of {_item}'s lore to "&r쿨타임 : %{skill::cool::2}%초"
+						set slot 6 of loop-value to {_item}
+				else:
+					set {_item} to gray dye named "&r&c쿨타임 : %{skill::cool::2::%loop-value%}%초"
+					set slot 6 of loop-value to {_item}
+
+				if {skill::cool::3::%loop-value%} is not set:
+					if slot 7 of loop-value is not magenta dye:
+						set {_item} to magenta dye named "&r전력질주"
+						set the 1st line of {_item}'s lore to "&r전력을 다해 빠르게 질주한다."
+						set the 2nd line of {_item}'s lore to "&r쿨타임 : %{skill::cool::3}%초"
+						set slot 7 of loop-value to {_item}
+				else:
+					set {_item} to gray dye named "&r&c쿨타임 : %{skill::cool::3::%loop-value%}%초"
+					set slot 7 of loop-value to {_item}
+
+				if {skill::cool::4::%loop-value%} is not set:
+					if slot 8 of loop-value is not purple dye:
+						set {_item} to purple dye named "&r가벼운 발걸음"
+						set the 1st line of {_item}'s lore to "&r깃털처럼 가벼워져 도약력이 좋아진다."
+						set the 2nd line of {_item}'s lore to "&r쿨타임 : %{skill::cool::4}%초"
+						set slot 8 of loop-value to {_item}
+				else:
+					set {_item} to gray dye named "&r&c쿨타임 : %{skill::cool::4::%loop-value%}%초"
+					set slot 8 of loop-value to {_item}
