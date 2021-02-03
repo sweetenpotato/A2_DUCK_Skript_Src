@@ -20,49 +20,69 @@ command /스킬 [<text>] [<text>] [<text>] [<text>]:
 			if arg-1 is "활성화":
 				message "&b[&aSkript&b]&r 스킬이 활성화 되었습니다."
 				set {skill::utill::activated} to true
+
 			else if arg-1 is "비활성화":
-				message "&b[&aSkript&b]&r 스킬이 비활성화 되었습니다."
-				set {skill::utill::activated} to false
-				loop {skill::player::*}:
-					if loop-value is online:
-						set slot 5 of loop-value to air
-						set slot 6 of loop-value to air
-						set slot 7 of loop-value to air
-						set slot 8 of loop-value to air
-				clear {skill::cool::1::*}
-				clear {skill::cool::2::*}
-				clear {skill::cool::3::*}
-				clear {skill::cool::4::*}
+				if {skill::utill::activated} is true:
+					message "&b[&aSkript&b]&r 스킬이 비활성화 되었습니다."
+					set {skill::utill::activated} to false
+					loop {skill::player::*}:
+						if loop-value is online:
+							set slot 5 of loop-value to air
+							set slot 6 of loop-value to air
+							set slot 7 of loop-value to air
+							set slot 8 of loop-value to air
+					clear {skill::cool::1::*}
+					clear {skill::cool::2::*}
+					clear {skill::cool::3::*}
+					clear {skill::cool::4::*}
+				else:
+					message "&b[&aSkript&b]&r 현재 스킬이 활성화 되어있는 상태가 아닙니다."
+
 			else if arg-1 is "set":
 				if arg-2 is "add":
 					if arg-3 is "player":
-						if arg-4 is not "@op":
+						if arg-4 is not "#op":
 							set {_player} to arg-4 parsed as player
-							if {_player} is type of player:
-								add {_player} to {skill::player::*}
-								message "&b[&aSkript&b]&r %{_player}%님이 스킬 사용 가능 목록에 추가되었습니다."
-						else if arg-4 is "@op":
+							if {skill::player::*} contains {_player}:
+								message "&b[&aSkript&b]&r 해당 플레이어는 이미 스킬 사용 가능 목록에 추가되어 있습니다."
+							else:
+								if {_player} is type of player:
+									add {_player} to {skill::player::*}
+									message "&b[&aSkript&b]&r %{_player}%님이 스킬 사용 가능 목록에 추가되었습니다."
+								else:
+									message "&b[&aSkript&b]&r 해당 닉네임을 가진 플레이어는 존재하지 않습니다."
+
+						else if arg-4 is "#op":
 							loop all players:
 								if loop-value is op:
-									add loop-value to {skill::player::*}
-									message "&b[&aSkript&b]&r %loop-value%님이 스킬 사용 가능 목록에 추가되었습니다."
+									if {skill::player::*} do not contain loop-value:
+										add loop-value to {skill::player::*}
+										message "&b[&aSkript&b]&r %loop-value%님이 스킬 사용 가능 목록에 추가되었습니다."
+
 					else:
 						message "&b[&aSkript&b]&r 현재 지원되지 않는 기능입니다."
 
 				else if arg-2 is "remove":
 					if arg-3 is "player":
-						if arg-4 is not "@op":
+						if arg-4 is not "#op":
 							set {_player} to arg-4 parsed as player
 							if {_player} is type of player:
-								loop {skill::player::*}:
-									if loop-value is {_player}:
-										clear {skill::player::%loop-index%}
-										message "&b[&aSkript&b]&r %{_player}%님이 스킬 사용 가능 목록에서 제거되었습니다."
-						else if arg-4 is "@op":
+								if {skill::player::*} contains {_player}:
+									loop {skill::player::*}:
+										if loop-value is {_player}:
+											clear {skill::player::%loop-index%}
+											message "&b[&aSkript&b]&r %{_player}%님이 스킬 사용 가능 목록에서 제거되었습니다."
+									fitArray
+								else:
+									message "&b[&aSkript&b]&r %{_player}%님은 이미 스킬 사용 가능 목록에서 존재하지 않습니다."
+
+						else if arg-4 is "#op":
 							loop {skill::player::*}:
-								if loop-value is op:
-									clear {skill::player::%loop-index%}
-									message "&b[&aSkript&b]&r %loop-value%님이 스킬 사용 가능 목록에서 제거되었습니다."
+								if loop-value is online:
+									if loop-value is op:
+										clear {skill::player::%loop-index%}
+										message "&b[&aSkript&b]&r %loop-value%님이 스킬 사용 가능 목록에서 제거되었습니다."
+
 					else:
 						message "&b[&aSkript&b]&r 현재 지원하지 않는 기능입니다."
 
@@ -76,15 +96,21 @@ command /스킬 [<text>] [<text>] [<text>] [<text>]:
 						set {_id} to arg-4 parsed as integer
 						if {_id} is 1 or 2 or 3 or 4:
 							set {skill::cool::%{_id}%} to {_cool}
+						else:
+							message "&b[&aSkript&b]&r 적절하지 않은 skill id 입니다. 1, 2, 3, 4 중 하나를 입력해 주세요."
+					else:
+						message "&b[&aSkript&b]&r 쿨타임으로 설정할 시간을 입력해 주세요."
 
 				else if arg-2 is "time":
 					set {_time} to arg-3 parsed as integer
 					if {_time} is set:
 						set {_id} to arg-4 parsed as integer
-						if {_id} is 1 or 2 or 3 or 4:
+						if {_id} is 2 or 3 or 4:
 							set {skill::time::%{_id}%} to {_cool}
 						else:
-							message "&b[&aSkript&b]&r 정확한 스킬 id를 입력해 주세요."
+							message "&b[&aSkript&b]&r 정확한 스킬 id를 입력해 주세요. (2, 3, 4)"
+					else:
+						message "&b[&aSkript&b]&r 지속 시간으로 설정할 시간을 입력해 주세요."
 
 
 on rightclick:
@@ -188,3 +214,16 @@ every 1 ticks:
 				else:
 					set {_item} to gray dye named "&r&c쿨타임 : %{skill::cool::4::%loop-value%}%초"
 					set slot 8 of loop-value to {_item}
+
+function fitArray(arrayName: text):
+	set {_total} to 1
+	loop {%{_arrayName}%::*}:
+		set {_ind} to loop-index parsed as integer
+		if {_ind} is set :
+			if {_ind} is more than 0:
+				if {_total} is {_ind}:
+					add 1 to {_total}
+				else if {_total} < {_ind}:
+					set {%{_arrayName}%::%{_total}%} to loop-value
+					add 1 to {_total}
+					clear {%{_arrayName}%::%{_ind}%}
