@@ -1,0 +1,313 @@
+on load:
+	send "----------------------------------------------------------------------" to console
+	send "[Skript] Block Event Skript by sweetenpotato Enabled." to console
+	send "[Skript] 버그 제보 : sweetenpotato@outlook.com | ※ 버그 로그 포함 ※" to console
+	send "----------------------------------------------------------------------" to console
+	if {blockevent::prefix} is not set:
+		set {blockevent::prefix} to "&f"
+	loop {blockevent::event::name::*}:
+		if {blockevent::event::item_type::%loop-value%} is not set:
+			set {blockevent::event::item_type::%loop-value%} to air
+
+command /blockevent [<text>] [<text>] [<text>] [<text>]:
+	aliases: /be, /e
+	trigger:
+		if player is op:
+			if {blockevent::name::%uuid of player%} is not set:
+				if arg-1 is not set:
+					message "&b[&aSkript&b]&r 하위 명령어가 입력되지 않았습니다!"
+					message "&b[&aSkript&b]&r /blockevent help를 입력해 명령어를 확인하세요."
+				else if arg-1 is "help":
+					message "&b[&aSkript&b]&r /blockevent create [<이름>] [<&6left&r|&bright&r>] [<유형>]: 해당 위치를 클릭할 시 어떤 이벤트를 작동시킬지 설정합니다."
+					message "&b[&aSkript&b]&r 이벤트 유형 : 1 - 명령어 실행, 2 - 채팅 메시지 출력, 3 - kill"
+					message "&b[&aSkript&b]&r /blockevent color [<색상 코드>]: 블록 이벤트의 기본 채팅 색상을 설정합니다."
+					message "&b[&aSkript&b]&r 색상 코드 : &00&r, &11&r, &22&r, &33&r, &44&r, &55&r, &66&r, &77&r, &88&r, &99&r, &aa&r, &bb&r, &cc&r, &dd&r, &ee&r, &ff&r"
+					message "&b[&aSkript&b]&r /blockevent delete [<이름>]: 해당 위치를 클릭할 시 발동되는 이벤트를 제거합니다."
+					message "&b[&aSkript&b]&r /blockevent list : 이벤트 리스트들을 보여줍니다."
+					message "&b[&aSkript&b]&r /blockevent tool : 블록의 좌표를 지정하는 도구를 지급합니다."
+					message "&b[&aSkript&b]&r /blockevent info [<이름>] : 해당 이벤트의 정보를 확인합니다."
+					message "&b[&aSkript&b]&r /blockevent set [<이름>] [<유형>] [<하위 인자>] : 해당 이벤트를 재설정합니다."
+					message "&b[&aSkript&b]&r 유형 종류 : pos, item, content(업데이트 예정), click"
+				else if arg-1 is "create":
+					if arg-2 is not set:
+						message "&b[&aSkript&b]&r 해당 이벤트의 이름을 입력해 주세요! (중복 불가능)"
+					else if arg-3 is not set:
+						message "&b[&aSkript&b]&r 왼쪽 클릭(left)인지 오른쪽 클릭(right)인지 말씀해 주세요!"
+					else if arg-4 is not set:
+						message "&b[&aSkript&b]&r 이벤트 유형(1 - 명령어 실행, 2 - 채팅 메시지 출력, 3 - kill)을 입력해 주세요!"
+					else:
+						if {blockevent::pos::%uuid of player%} is not set:
+							message "&b[&aSkript&b]&r 해당 블록의 좌표를 먼저 지정해 주세요!"
+						else if {blockevent::event::pos::*} contains {blockevent::pos::%uuid of player%}:
+							message "&b[&aSkript&b]&r 이미 지정된 이벤트가 있습니다! 삭제한 후 진행해 주세요!"
+						else:
+							if {blockevent::event::name::*} contains arg-2:
+								message "&b[&aSkript&b]&r 이미 해당 이름을 가지는 이벤트가 존재합니다!"
+							else:
+								if arg-3 is "left":
+									if arg-4 is "1":
+										addEvent(arg-2, arg-3, arg-4, {blockevent::pos::%uuid of player%})
+										set {blockevent::name::%uuid of player%} to arg-2
+										message "&b[&aSkript&b]&r 30초 이내에 실행할 명령어를 입력하세요 (&c/&r제외 입력)"
+										wait for 30 seconds
+										if {blockevent::name::%uuid of player%} is arg-2:
+											message "&b[&aSkript&b]&r 30초 이내에 입력하지 않아 행동이 취소되었습니다."
+											clear {blockevent::name::%uuid of player%}
+											clearEvent(arg-2)
+									else if arg-4 is "2":
+										addEvent(arg-2, arg-3, arg-4, {blockevent::pos::%uuid of player%})
+										set {blockevent::name::%uuid of player%} to arg-2
+										message "&b[&aSkript&b]&r 30초 이내에 출력될 채팅을 입력하세요."
+										wait for 30 seconds
+										if {blockevent::name::%uuid of player%} is arg-2:
+											message "&b[&aSkript&b]&r 30초 이내에 입력하지 않아 행동이 취소되었습니다."
+											clear {blockevent::name::%uuid of player%}
+											clearEvent(arg-2)
+									else if arg-4 is "3":
+										addEvent(arg-2, arg-3, arg-4, {blockevent::pos::%uuid of player%})
+										set {blockevent::event::content::%{_event_name}%} to "none"
+									else:
+										message "&b[&aSkript&b]&r 올바른 이벤트 유형(1 - 명령어 실행, 2 - 채팅 메시지 출력, 3 - kill)을 입력해 주세요!"
+								else if arg-3 is "right":
+									if arg-4 is "1":
+										addEvent(arg-2, arg-3, arg-4, {blockevent::pos::%uuid of player%})
+										set {blockevent::name::%uuid of player%} to arg-2
+										message "&b[&aSkript&b]&r 30초 이내에 실행할 명령어를 입력하세요 (&c/&r제외 입력)"
+										wait for 30 seconds
+										if {blockevent::name::%uuid of player%} is arg-2:
+											message "&b[&aSkript&b]&r 30초 이내에 입력하지 않아 행동이 취소되었습니다."
+											clearEvent(arg-2)
+									else if arg-4 is "2":
+										addEvent(arg-2, arg-3, arg-4, {blockevent::pos::%uuid of player%})
+										set {blockevent::name::%uuid of player%} to arg-2
+										message "&b[&aSkript&b]&r 30초 이내에 출력될 채팅을 입력하세요."
+										wait for 30 seconds
+										if {blockevent::name::%uuid of player%} is arg-2:
+											message "&b[&aSkript&b]&r 30초 이내에 입력하지 않아 행동이 취소되었습니다."
+											clearEvent(arg-2)
+									else if arg-4 is "3":
+										addEvent(arg-2, arg-3, arg-4, {blockevent::pos::%uuid of player%})
+										set {blockevent::event::content::%{_event_name}%} to "none"
+									else:
+										message "&b[&aSkript&b]&r 올바른 이벤트 유형(1 - 명령어 실행, 2 - 채팅 메시지 출력, 3 - kill)을 입력해 주세요!"
+								else:
+									message "&b[&aSkript&b]&r 올바른 클릭 유형(&cleft&r / &cright&r)을 입력해 주세요!"
+				else if arg-1 is "color":
+					if arg-2 is set:
+						set {blockevent::prefix} to "&%arg-2%"
+						message "&b[&aSkript&b]&r 색상이 %{blockevent::prefix}%이렇게&r 선택되었습니다!"
+					else:
+						message "&b[&aSkript&b]&r 올바른 색상을 입력해 주세요!"
+				else if arg-1 is "delete":
+					if arg-2 is not set:
+						message "&b[&aSkript&b]&r 올바른 이벤트 이름을 입력해 주세요!"
+					else:
+						if {blockevent::event::name::*} contains arg-2:
+							clearEvent(arg-2)
+							message "&b[&aSkript&b]&r 해당 이벤트가 성공적으로 삭제되었습니다."
+						else:
+							message "&b[&aSkript&b]&r 올바른 이벤트 이름을 입력해 주세요!"
+				else if arg-1 is "list":
+					message "&b[&aSkript&b]&r %{blockevent::event::name::*}%"
+				else if arg-1 is "tool":
+					give player 1 stick named "&rBlock Eventer"
+				else if arg-1 is "info":
+					if arg-2 is not set:
+						message "&b[&aSkript&b]&r 올바른 이벤트 이름을 입력해 주세요!"
+					else if {blockevent::event::name::*} contains arg-2:
+						message "&b[&aSkript&b]&r 이벤트 이름 : %arg-2%"
+						message "&b[&aSkript&b]&r 이벤트 좌표 : %{blockevent::event::pos::%arg-2%}%"
+						message "&b[&aSkript&b]&r 클릭 타입 : %{blockevent::event::click::%arg-2%}%"
+						message "&b[&aSkript&b]&r 이벤트 내용 : %{blockevent::event::content::%arg-2%}%"
+					else:
+						message "&b[&aSkript&b]&r 올바른 이벤트 이름을 입력해 주세요!"
+				else if arg-1 is "set":
+					if arg-2 is not set:
+						message "&b[&aSkript&b]&r 올바른 이벤트 이름을 입력해 주세요!"
+					if {blockevent::event::name::*} contains arg-2:
+						if arg-3 is "pos":
+							if {blockevent::pos::%uuid of player%} is not set:
+								message "&b[&aSkript&b]&r 이벤트의 좌표를 설정하기 이전에 Block Eventer를 이용해서 좌표를 설정해 주세요!"
+							else if {blockevent::event::pos::*} contains {blockevent::pos::%uuid of player%}:
+								message "&b[&aSkript&b]&r 이미 해당 좌표에 다른 이벤트가 설정되어 있습니다. 다른 좌표에 설정해주세요."
+							else:
+								set {blockevent::event::pos::%arg-2%} to {blockevent::pos::%uuid of player%}
+								message "%arg-2% 이벤트가 %{blockevent::event::pos::%arg-2%}%에 지정되었습니다."
+						else if arg-3 is "click":
+							if arg-4 is not set:
+								message "&b[&aSkript&b]&r 클릭 타입을 지정해 주세요! [left / right]"
+							else if arg-4 is "left":
+								set {blockevent::event::click::%arg-2%} to "left"
+								message "&b[&aSkript&b]&r %arg-2% 이벤트가 %{blockevent::event::click::%arg-2%}% 클릭 시 실행되도록 지정되었습니다."
+							else if arg-4 is "right":
+								set {blockevent::event::click::%arg-2%} to "right"
+								message "&b[&aSkript&b]&r %arg-2% 이벤트가 %{blockevent::event::click::%arg-2%}% 클릭 시 실행되도록 지정되었습니다."
+							else:
+								message "&b[&aSkript&b]&r 올바른 클릭 타입을 지정해 주세요! [left / right]"
+						else if arg-3 is "item":
+							set {blockevent::event::item_type::%arg-2%} to player's tool
+							set {blockevent::event::item_name::%arg-2%} to name of the player's tool
+							if player's tool is not air:
+								message "&b[&aSkript&b]&r %arg-2% 이벤트를 실행하기 위해서는 %{blockevent::event::item_type::%arg-2%}% 아이템을 들어야 합니다."
+								if name of the player's tool is set:
+									message "&b[&aSkript&b]&r 그리고 해당 아이템의 이름은 %{blockevent::event::item_name::%arg-2%}%여야 합니다."
+								else:
+									message "&b[&aSkript&b]&r 그리고 해당 아이템의 이름은 상관이 없습니다."
+							else:
+								message "&b[&aSkript&b]&r %arg-2% 이벤트를 실행하기 위해서는 특정 아이템을 손에 들 필요가 없습니다."
+							message "&b[&aSkript&b]&r 현재 손에 들고 있는 아이템 : %player's tool%, 아이템의 사용자 지정 이름 : %name of the player's tool%"
+						else if arg-3 is "content":
+							message "&b[&aSkript&b]&r 업데이트 예정입니다!"
+						else:
+							message "&b[&aSkript&b]&r 적절한 인자를 입력해 주세요! [pos, click, item]"
+					else:
+						message "&b[&aSkript&b]&r 적절한 이벤트의 이름을 입력해 주세요!"
+				else:
+					message "&b[&aSkript&b]&r /blockevent help를 입력해 명령어를 확인하세요."
+			else:
+				message "&b[&aSkript&b]&r 현재는 해당 명령어를 사용하실 수 없습니다."
+
+on leftclick:
+	if player's gamemode is creative:
+		if name of event-item is "&rBlock Eventer":
+			if event-item is stick:
+				cancel event
+				set {blockevent::pos::%uuid of player%} to event-location
+				message "&b[&aSkript&b]&r 현재 블록의 좌표를 저장합니다. %{blockevent::pos::%uuid of player%}%"
+	else if player's gamemode is survival:
+		set {_loc} to event-location
+		if {blockevent::event::pos::*} contains {_loc}:
+			loop {blockevent::event::pos::*}:
+				if loop-value is {_loc}:
+					set {_name} to  loop-index
+			if {blockevent::event::click::%{_name}%} is "left":
+				if {blockevent::event::item_type::%{_name}%} is not air:
+					if player's tool is {blockevent::event::item_type::%{_name}%}:
+						if name of player's tool is {blockevent::event::item_name::%{_name}%}:
+							if {blockevent::event::type::%{_name}%} is "1":
+								if player is not op:
+									op player
+									execute command "%{blockevent::event::content::%{_name}%}%" by player
+									deop player
+								else:
+									execute command "%{blockevent::event::content::%{_name}%}%" by player
+							else if {blockevent::event::type::%{_name}%} is "2":
+								message "%{blockevent::prefix}%%{blockevent::event::content::%{_name}%}%"
+							else if {blockevent::event::type::%{_name}%} is "3":
+								kill player
+				else:
+					if {blockevent::event::type::%{_name}%} is "1":
+						if player is not op:
+							op player
+							execute command "%{blockevent::event::content::%{_name}%}%" by player
+							deop player
+						else:
+							execute command "%{blockevent::event::content::%{_name}%}%" by player
+					else if {blockevent::event::type::%{_name}%} is "2":
+						message "%{blockevent::prefix}%%{blockevent::event::content::%{_name}%}%"
+					else if {blockevent::event::type::%{_name}%} is "3":
+						kill player
+
+on rightclick:
+	if player's gamemode is creative:
+		if name of event-item is "&rBlock Eventer":
+			if event-item is stick:
+				cancel event
+				set {_loc} to event-location
+				if {blockevent::event::pos::*} contains {_loc}:
+					loop {blockevent::event::pos::*}:
+						if loop-value is {_loc}:
+							set {_name} to  loop-index
+					clearEvent({_name})
+					message "&b[&aSkript&b]&r %{_name}% 이벤트가 성공적으로 삭제되었습니다."
+				else:
+					message "&b[&aSkript&b]&r 현재 이 구역에 저장된 이벤트는 없습니다."
+
+	else if player's gamemode is survival:
+		set {_loc} to event-location
+		if {blockevent::event::pos::*} contains {_loc}:
+			loop {blockevent::event::pos::*}:
+				if loop-value is {_loc}:
+					set {_name} to loop-index
+			if {blockevent::event::click::%{_name}%} is "right":
+				if {blockevent::event::item_type::%{_name}%} is not air:
+					if player's tool is {blockevent::event::item_type::%{_name}%}:
+						if name of player's tool is {blockevent::event::item_name::%{_name}%}:
+							if {blockevent::event::type::%{_name}%} is "1":
+								if player is not op:
+									op player
+									execute command "%{blockevent::event::content::%{_name}%}%" by player
+									deop player
+								else:
+									execute command "%{blockevent::event::content::%{_name}%}%" by player
+							else if {blockevent::event::type::%{_name}%} is "2":
+								message "%{blockevent::prefix}%%{blockevent::event::content::%{_name}%}%"
+							else if {blockevent::event::type::%{_name}%} is "3":
+								kill player
+				else:
+					if {blockevent::event::type::%{_name}%} is "1":
+						if player is not op:
+							op player
+							execute command "%{blockevent::event::content::%{_name}%}%" by player
+							deop player
+						else:
+							execute command "%{blockevent::event::content::%{_name}%}%" by player
+					else if {blockevent::event::type::%{_name}%} is "2":
+						message "%{blockevent::prefix}%%{blockevent::event::content::%{_name}%}%"
+					else if {blockevent::event::type::%{_name}%} is "3":
+						kill player
+on chat:
+	if {blockevent::name::%uuid of player%} is set:
+		set {_contents} to chat-message
+		cancel event
+		set {blockevent::event::content::%{blockevent::name::%uuid of player%}%} to {_contents}
+		set {blockevent::event::item_type::%{blockevent::name::%uuid of player%}%} to player's tool
+		set {blockevent::event::item_name::%{blockevent::name::%uuid of player%}%} to name of the player's tool
+		message "&b[&aSkript&b]&r %{blockevent::name::%uuid of player%}% 이벤트의 내용이 '&c%{blockevent::event::content::%{blockevent::name::%uuid of player%}%}%&r'로 설정되었습니다."
+		clear {blockevent::name::%uuid of player%}
+
+function fitArray():
+	set {_i} to ""
+	loop {blockevent::event::name::*}:
+		if loop-value is not set:
+			set {_j} to loop-index
+			add 1 to {_j}
+			set {blockevent::event::name::%loop-index%} to {blockevent::event::name::%{_j}%}
+			clear {blockevent::event::name::%{_j}%}
+
+function addEvent(event_name: text, click_type: text, event_type: text, event_pos: location):
+	add {_event_name} to {blockevent::event::name::*}
+	set {blockevent::event::pos::%{_event_name}%} to {_event_pos}
+	set {blockevent::event::click::%{_event_name}%} to {_click_type}
+	set {blockevent::event::type::%{_event_name}%} to {_event_type}
+	fitArray()
+
+function clearEvent(event_name: text):
+	loop {blockevent::event::name::*}:
+		if loop-value is {_event_name}:
+			clear {blockevent::event::name::%loop-index%}
+	clear {blockevent::event::pos::%{_event_name}%}
+	clear {blockevent::event::click::%{_event_name}%}
+	clear {blockevent::event::type::%{_event_name}%}
+	clear {blockevent::event::content::%{_event_name}%}
+	clear {blockevent::event::item_type::%{_event_name}%}
+	clear {blockevent::event::item_name::%{_event_name}%}
+	fitArray()
+
+command /blockdebug [<text>]:
+	trigger:
+		if player is op:
+			message "%{%arg-1%}%"
+
+command /handledebug:
+	trigger:
+		if player is op:
+			message "%player's tool%"
+			message "%tool's display name%"
+		if player's tool is air:
+			message "air!"
+
+command /rn [<text>]:
+	trigger:
+		set the name of the player's tool to arg-1
+		replace all "_" with " " in the name of the player's tool
