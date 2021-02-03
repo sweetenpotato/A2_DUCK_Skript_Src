@@ -86,10 +86,6 @@ command /스킬 [<text>] [<text>] [<text>] [<text>]:
 					else:
 						message "&b[&aSkript&b]&r 현재 지원하지 않는 기능입니다."
 
-				else if arg-2 is "list":
-					if arg-3 is "player":
-						message "&b[&aSkript&b]&r 스킬 사용 가능 유저 : %{skill::player::*}%"
-
 				else if arg-2 is "cool":
 					set {_cool} to arg-3 parsed as integer
 					if {_cool} is set:
@@ -111,6 +107,12 @@ command /스킬 [<text>] [<text>] [<text>] [<text>]:
 							message "&b[&aSkript&b]&r 정확한 스킬 id를 입력해 주세요. (2, 3, 4)"
 					else:
 						message "&b[&aSkript&b]&r 지속 시간으로 설정할 시간을 입력해 주세요."
+				else:
+					message "&b[&aSkript&b]&r 해당 인자로 된 설정은 존재하지 않습니다."
+
+			else if arg-1 is "list":
+				if arg-2 is "player":
+					message "&b[&aSkript&b]&r 스킬 사용 가능 유저 : %{skill::player::*}%"
 
 
 on rightclick:
